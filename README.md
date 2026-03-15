@@ -47,19 +47,22 @@ Or manually copy these files into your project's `.claude/` directory:
 
 ## Usage
 
+> **Important:** `/agents` is a management command (view/edit/delete). To **run** an agent, type a natural language request in the chat. Subagents are loaded at session start — restart Claude Code after installation.
+
 ### First Time (Project Setup)
 
-Open Claude Code in your project directory and run:
+Open Claude Code in your project directory and type:
 
 ```
-/agents initializer
+Use the initializer agent to set up this project: Build a REST API with
+user authentication, CRUD operations for blog posts, and a React frontend
+with dark mode support.
 ```
 
-Then tell it what you want to build:
+Or from the CLI:
 
-```
-Build a REST API with user authentication, CRUD operations for blog posts,
-and a React frontend with dark mode support.
+```bash
+claude --agent initializer "Set up this project based on spec.md"
 ```
 
 The initializer will:
@@ -71,7 +74,13 @@ The initializer will:
 ### Every Subsequent Session
 
 ```
-/agents coder
+Use the coder agent to make progress on this project
+```
+
+Or from the CLI:
+
+```bash
+claude --agent coder "Implement the next feature"
 ```
 
 The coder will:

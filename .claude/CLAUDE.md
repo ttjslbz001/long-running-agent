@@ -4,10 +4,12 @@ This project uses a **two-agent pattern** for long-running development across mu
 
 ## Agents
 
-| Agent | When to Use | Command |
+| Agent | When to Use | How to Invoke |
 |---|---|---|
-| **Initializer** | ONCE at project start — sets up plan, progress tracking, environment | `/agents initializer` |
-| **Coder** | Every subsequent session — implements one task at a time | `/agents coder` |
+| **Initializer** | ONCE at project start — sets up plan, progress tracking, environment | Type: `Use the initializer agent to set up this project` |
+| **Coder** | Every subsequent session — implements one task at a time | Type: `Use the coder agent to make progress on this project` |
+
+> **Note:** `/agents` is a management command (view/edit/delete). To **run** an agent, type a natural language request in the chat. Or use CLI: `claude --agent initializer "your prompt"`
 
 ## Key Files
 
@@ -31,8 +33,12 @@ This project uses a **two-agent pattern** for long-running development across mu
 ## Workflow
 
 ```
-First time:  /agents initializer  →  brainstorm → plan → setup → commit
-Every time:  /agents coder        →  orient → implement → verify → commit → repeat
+First time:  "Use the initializer agent to..."  →  brainstorm → plan → setup → commit
+Every time:  "Use the coder agent to..."        →  orient → implement → verify → commit → repeat
+
+CLI alternative:
+  claude --agent initializer "set up this project based on spec.md"
+  claude --agent coder "implement the next feature"
 ```
 
 ## Dependencies
