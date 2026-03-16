@@ -93,6 +93,16 @@ Use the learner agent to learn from recent feedback
 
 Analyzes what you corrected, reverted, or overrode in agent work. Extracts patterns and encodes them into `preferences.md`, `anti-patterns.md`, adapter updates, and decision records — so future sessions don't repeat the same mistakes.
 
+### 7. Take a snapshot
+
+```bash
+./snapshot.sh              # human-readable markdown
+./snapshot.sh --json       # machine-readable JSON
+./snapshot.sh > snap.md    # save to file
+```
+
+Dumps the full state of the agent team: project state, tasks, long-term memory, knowledge files, decisions, git history, and agent configuration.
+
 ## Agent Team
 
 ### Primary Agents (user-invoked)
@@ -205,7 +215,7 @@ LEARNER (after human corrections)
 | File | Created By | Managed By | Purpose |
 |---|---|---|---|
 | `state.json` | initializer | coder | Machine-readable project state |
-| `task_plan.json` | coder (planning mode) | coder | Structured task list with status per task |
+| `task_plan.json` | architect | coder | Structured task list with status per task |
 | `notes.md` | initializer | coder | Human-readable session logs, decisions |
 | `init.sh` | initializer | — | Idempotent dev environment setup |
 
@@ -252,6 +262,34 @@ These come directly from the two papers:
 | Specialized agents | Both | Architect, implementer, tester — each with narrow focus |
 | Human taste compounds | OpenAI | Learner agent encodes corrections into long-term memory |
 
+## Contributing
+
+Contributions are welcome. This scaffold is designed to be general-purpose — improvements that make it work better across different project types are especially valuable.
+
+**Areas where help is most needed:**
+
+- **Adapter templates** — add examples for more tech stacks (Rust/Cargo, Go, Ruby on Rails, Java/Gradle, etc.)
+- **Harness protocols** — improve the reflection, observe, and session-start protocols based on real-world usage
+- **Agent prompts** — refine agent instructions based on what works well (or fails) in practice
+- **Testing the scaffold** — try it on your projects and report what the initializer gets right or wrong
+- **Snapshot tooling** — extend `snapshot.sh` with more diagnostics or alternative output formats
+- **CI integration** — ideas for running the gardener or learner as part of CI pipelines
+
+To contribute:
+
+1. Fork the repo
+2. Create a branch (`git checkout -b improve-tester-agent`)
+3. Make your changes
+4. Test on a real project if possible
+5. Open a PR with a description of what you changed and why
+
+If you have ideas but aren't sure how to implement them, open an issue — even a description of a failure mode you encountered is useful.
+
+## References
+
+- [Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) — Anthropic, Nov 2025
+- [Harness Engineering: Leveraging Codex in an Agent-First World](https://openai.com/zh-Hans-CN/index/harness-engineering/) — OpenAI, Feb 2026
+
 ## License
 
-MIT
+MIT License — see [LICENSE](LICENSE) for details.
