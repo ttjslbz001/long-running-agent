@@ -6,14 +6,16 @@ A portable, project-agnostic harness for multi-session AI coding agents.
 
 | Agent | When | Invoke |
 |---|---|---|
-| **initializer** | ONCE — scans project, generates adapter + state + plan | `Use the initializer agent to set up this project` |
-| **coder** | Every session — implements one task, reflects, commits | `Use the coder agent to make progress` |
+| **initializer** | ONCE per project — scans codebase, generates adapter + state | `Use the initializer agent to set up this project` |
+| **coder** | Every session — plans features OR implements tasks | `Use the coder agent to [your goal]` |
 | **gardener** | Periodically — cleans drift, updates quality score | `Use the gardener agent to clean up` |
 
 ## Lifecycle
 
 ```
-init (once)  →  orient → implement → observe → reflect → commit → repeat
+init (once)   →  scans project → generates adapter.md, state.json, init.sh
+coder (plan)  →  user gives goal → brainstorm → approve → task_plan.json
+coder (build) →  orient → implement → observe → reflect → commit → repeat
 ```
 
 ## Key Files

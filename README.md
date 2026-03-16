@@ -39,35 +39,50 @@ The **harness** is 100% generic. The **adapter** is the only project-specific fi
 cp -r .claude/ /path/to/your-project/.claude/
 ```
 
-### 2. Initialize (scans your project automatically)
+### 2. Initialize the agent team (scans your project)
 
 ```
 Use the initializer agent to set up this project
 ```
 
-The initializer will:
-1. **Scan** your codebase — package.json, CI configs, test configs, Dockerfiles, git history, source conventions
+The initializer scans your codebase and makes the agent team operational:
+1. **Scan** — package.json, CI configs, test configs, Dockerfiles, git history, source conventions
 2. **Generate** `domain/adapter.md` with real build/test/deploy/verify commands
-3. **Create** `state.json`, `task_plan.json`, `notes.md`, `init.sh`
+3. **Create** `state.json`, `notes.md`, `init.sh`
 4. **Verify** the scaffold works (runs build + test)
 5. **Commit** everything
 
-### 3. Code (every subsequent session)
+The initializer does NOT plan features — it only sets up the team.
+
+### 3. Start a feature (coder plans + implements)
+
+```
+Use the coder agent to add user authentication with JWT
+```
+
+If no `task_plan.json` exists (or all tasks are done), the coder enters **planning mode**:
+1. **Explore** the codebase and understand the current state
+2. **Brainstorm** 2-3 approaches with trade-offs
+3. **Get approval** from you on the chosen approach
+4. **Create** `task_plan.json` with granular, ordered tasks
+5. **Start implementing** the first task immediately
+
+### 4. Continue working (coder implements)
 
 ```
 Use the coder agent to make progress
 ```
 
-The coder will:
+If `task_plan.json` has pending tasks, the coder enters **implementing mode**:
 1. **Orient** — read `state.json` (one file, instant context), check health
-2. **Choose** the next pending task from `task_plan.json`
+2. **Choose** the next pending task
 3. **Implement** with TDD
 4. **Observe** — run the adapter's verify protocol after deploys
 5. **Reflect** — assess outcome, detect patterns, create guards, update knowledge
 6. **Commit** and update all state files
 7. **Repeat** until context limit or all tasks done
 
-### 4. Garden (periodically)
+### 5. Garden (periodically)
 
 ```
 Use the gardener agent to clean up
@@ -77,44 +92,57 @@ Detects stale docs, pattern drift, flaky tests, and state file inconsistencies. 
 
 ## Agents
 
-| Agent | When | What It Does |
+| Agent | Responsibility | When |
 |---|---|---|
-| **initializer** | Once per project | Scans codebase → generates adapter + state + plan |
-| **coder** | Every session | Orient → implement → observe → reflect → commit |
-| **gardener** | Every 10+ sessions | Detect entropy → clean docs → fix drift → update quality score |
+| **initializer** | Scans project → generates adapter, state, init.sh | Once per project (team setup) |
+| **coder** | Plans features → implements tasks → reflects → commits | Every session (the work) |
+| **gardener** | Detects entropy → cleans docs → fixes drift | Every 10+ sessions (maintenance) |
 
-## Session Lifecycle
+The **initializer** sets up the team. The **coder** does the work (both planning and building). The **gardener** keeps quality from degrading.
+
+## Lifecycle
 
 ```
-SESSION START
-  ├─ Read state.json (instant context)
-  ├─ Read task_plan.json + notes.md + git log
-  ├─ Read domain/adapter.md (how to build/test/deploy)
-  ├─ Run init.sh + smoke test
-  │   └─ If broken → FIX FIRST
+INITIALIZER (once per project)
+  └─ Scan project → adapter.md, state.json, init.sh → commit
+
+CODER — Planning Mode (when no tasks exist)
+  ├─ Read adapter.md + codebase
+  ├─ Brainstorm approaches → get user approval
+  ├─ Create task_plan.json → commit
+  └─ Transition to Implementing Mode
+
+CODER — Implementing Mode (when pending tasks exist)
+  ├─ ORIENT
+  │   ├─ Read state.json (instant context)
+  │   ├─ Read task_plan.json + notes.md + git log
+  │   ├─ Read domain/adapter.md
+  │   ├─ Run init.sh + smoke test
+  │   │   └─ If broken → FIX FIRST
+  │   └─ Choose next pending task
   │
-IMPLEMENT (one task)
-  ├─ TDD: test → implement → verify
-  ├─ Commit with descriptive message
+  ├─ IMPLEMENT (one task)
+  │   └─ TDD: test → implement → verify → commit
   │
-OBSERVE (if deployed)
-  ├─ Run adapter's verify methods
-  ├─ Check success/failure markers
+  ├─ OBSERVE (if deployed)
+  │   ├─ Run adapter's verify methods
   │   └─ If fails → FIX, don't proceed
   │
-REFLECT
-  ├─ Assess outcome (success/fail/partial)
-  ├─ Pattern recognition (recurring issue?)
-  ├─ Create guard if recurring (ADR, test, gotcha)
-  ├─ Update domain knowledge if new learning
-  ├─ Adjust plan if needed
+  ├─ REFLECT
+  │   ├─ Assess outcome (success/fail/partial)
+  │   ├─ Pattern recognition → create guard if recurring
+  │   ├─ Update domain knowledge if new learning
+  │   └─ Adjust plan if needed
   │
-UPDATE STATE
-  ├─ state.json ← session summary
-  ├─ task_plan.json ← task status
-  ├─ notes.md ← timestamped log
+  ├─ UPDATE STATE
+  │   ├─ state.json ← session summary
+  │   ├─ task_plan.json ← task status
+  │   └─ notes.md ← timestamped log
   │
-REPEAT or STOP (clean state)
+  └─ REPEAT or STOP (clean state)
+
+GARDENER (every 10+ sessions)
+  └─ Detect drift → clean docs → fix state → update quality score
 ```
 
 ## File Structure
@@ -143,14 +171,14 @@ REPEAT or STOP (clean state)
     └── evidence/                 # Verification artifacts
 ```
 
-### Runtime Files (created by initializer, managed by coder)
+### Runtime Files
 
-| File | Format | Purpose |
-|---|---|---|
-| `state.json` | JSON | Machine-readable project state — single-file session context |
-| `task_plan.json` | JSON | Structured feature/task list with status per task |
-| `notes.md` | Markdown | Human-readable session logs, decisions, errors |
-| `init.sh` | Shell | Idempotent dev environment setup |
+| File | Created By | Managed By | Purpose |
+|---|---|---|---|
+| `state.json` | initializer | coder | Machine-readable project state |
+| `task_plan.json` | coder (planning mode) | coder | Structured task list with status per task |
+| `notes.md` | initializer | coder | Human-readable session logs, decisions |
+| `init.sh` | initializer | — | Idempotent dev environment setup |
 
 ## The Adapter Pattern
 
