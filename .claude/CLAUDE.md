@@ -1,50 +1,65 @@
-# Long-Running Agent Plugin
+# Long-Running Agent Scaffold
 
-This project uses a **two-agent pattern** for long-running development across multiple sessions.
+A portable, project-agnostic harness for multi-session AI coding agents.
 
 ## Agents
 
-| Agent | When to Use | How to Invoke |
+| Agent | When | Invoke |
 |---|---|---|
-| **Initializer** | ONCE at project start — sets up plan, progress tracking, environment | Type: `Use the initializer agent to set up this project` |
-| **Coder** | Every subsequent session — implements one task at a time | Type: `Use the coder agent to make progress on this project` |
+| **initializer** | ONCE — scans project, generates adapter + state + plan | `Use the initializer agent to set up this project` |
+| **coder** | Every session — implements one task, reflects, commits | `Use the coder agent to make progress` |
+| **gardener** | Periodically — cleans drift, updates quality score | `Use the gardener agent to clean up` |
 
-> **Note:** `/agents` is a management command (view/edit/delete). To **run** an agent, type a natural language request in the chat. Or use CLI: `claude --agent initializer "your prompt"`
+## Lifecycle
+
+```
+init (once)  →  orient → implement → observe → reflect → commit → repeat
+```
 
 ## Key Files
 
-| File | Purpose | Managed By |
+| File | Format | Purpose |
 |---|---|---|
-| `task_plan.md` | Task checkboxes and progress status (source of truth) | progress-tracker skill |
-| `notes.md` | Design decisions, session logs, error traces | progress-tracker skill |
-| `docs/plans/*.md` | Detailed implementation plan (read-only after creation) | initializer agent |
-| `init.sh` | Idempotent dev environment setup (run every session) | initializer agent |
+| `state.json` | JSON | Machine-readable project state (single-file session context) |
+| `task_plan.json` | JSON | Structured feature/task list with pass/fail status |
+| `notes.md` | Markdown | Human-readable session logs, decisions, errors |
+| `init.sh` | Shell | Idempotent dev environment setup |
+| `domain/adapter.md` | Markdown | Project-specific build/test/deploy/verify recipes |
+| `domain/knowledge/` | Markdown | Domain docs discovered or created during work |
 
 ## Rules
 
 1. **One task at a time** — never implement multiple features simultaneously
 2. **Always commit** after completing a task
-3. **Always update progress** — mark `[x]` in task_plan.md, log in notes.md
-4. **Fix bugs first** — repair broken state before new features
-5. **Never delete tasks** — only change checkbox state in task_plan.md
-6. **Re-read task_plan.md** before major decisions — keeps goals in attention window
-7. **Leave clean state** — codebase must be mergeable at session end
+3. **Always update state** — state.json, task_plan.json, notes.md
+4. **Fix broken state first** — repair before new features
+5. **Never delete tasks** — only change status in task_plan.json
+6. **Observe after deploy** — run the verify protocol from adapter.md
+7. **Reflect after every task** — run harness/session-reflect.md
+8. **Leave clean state** — codebase must be mergeable at session end
 
-## Workflow
+## File Map
 
 ```
-First time:  "Use the initializer agent to..."  →  brainstorm → plan → setup → commit
-Every time:  "Use the coder agent to..."        →  orient → implement → verify → commit → repeat
-
-CLI alternative:
-  claude --agent initializer "set up this project based on spec.md"
-  claude --agent coder "implement the next feature"
+.claude/
+├── CLAUDE.md                  ← you are here
+├── agents/
+│   ├── initializer.md         scan project → generate scaffold
+│   ├── coder.md               orient → implement → observe → reflect → commit
+│   └── gardener.md            periodic quality maintenance
+├── harness/
+│   ├── session-start.md       generic startup protocol
+│   ├── session-reflect.md     post-task reflection protocol
+│   ├── session-observe.md     post-deploy verification protocol
+│   └── progress-tracker.md    state.json + task_plan.json management
+├── domain/
+│   ├── adapter.md             ★ THE PLUGGABLE PART — project-specific recipes
+│   └── knowledge/             domain docs (auto-populated)
+├── templates/
+│   ├── state.json             template for machine-readable state
+│   ├── task_plan.json         template for structured feature list
+│   └── adapter-example.md     example adapter for reference
+└── docs/
+    ├── decisions/             ADRs from reflection loop
+    └── evidence/              verification artifacts
 ```
-
-## Dependencies
-
-This plugin requires these skills to be installed globally:
-
-- **Superpowers** — brainstorming, writing-plans, TDD, verification, finishing-branch
-- **Planning with Files** — task_plan.md / notes.md management pattern
-- **Ralph-plan** (optional) — for structuring iterative ralph-loop commands

@@ -1,0 +1,15 @@
+{
+  "goal": "",
+  "created": "",
+  "tasks": [
+    {
+      "id": 1,
+      "phase": "setup",
+      "description": "Example: Set up project structure",
+      "status": "pending",
+      "acceptance": "How to verify this task is done",
+      "files": ["expected/files/to/touch"],
+      "blocked_reason": null
+    }
+  ]
+}

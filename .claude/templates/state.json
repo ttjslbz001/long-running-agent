@@ -1,0 +1,43 @@
+{
+  "project": "",
+  "description": "",
+  "tech_stack": {
+    "language": "",
+    "framework": "",
+    "build_tool": "",
+    "test_runner": "",
+    "deploy_target": ""
+  },
+  "current_phase": "initialization",
+  "last_session": {
+    "timestamp": "",
+    "agent": "initializer",
+    "task_completed": "",
+    "status": "success",
+    "verification": {
+      "local_tests": null,
+      "deployed": null
+    },
+    "reflection": {
+      "recurring_pattern": false,
+      "guard_created": null,
+      "knowledge_updated": false
+    },
+    "next_task": ""
+  },
+  "tasks": {
+    "total": 0,
+    "completed": 0,
+    "in_progress": 0,
+    "blocked": 0
+  },
+  "known_issues": [],
+  "quality": {
+    "builds": null,
+    "tests_pass": null,
+    "lint_clean": null,
+    "docs_fresh": null,
+    "patterns_consistent": null,
+    "last_gardened": null
+  }
+}
