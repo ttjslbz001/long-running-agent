@@ -54,33 +54,28 @@ The initializer scans your codebase and makes the agent team operational:
 
 The initializer does NOT plan features — it only sets up the team.
 
-### 3. Start a feature (coder plans + implements)
+### 3. Start a feature
 
 ```
 Use the coder agent to add user authentication with JWT
 ```
 
-If no `task_plan.json` exists (or all tasks are done), the coder enters **planning mode**:
-1. **Explore** the codebase and understand the current state
-2. **Brainstorm** 2-3 approaches with trade-offs
-3. **Get approval** from you on the chosen approach
-4. **Create** `task_plan.json` with granular, ordered tasks
-5. **Start implementing** the first task immediately
+The coder is a **coordinator** that dispatches to specialized sub-agents:
 
-### 4. Continue working (coder implements)
+1. **Coder** orients — reads state, checks health, determines what to do
+2. **Architect** (sub-agent) — brainstorms approaches, gets your approval, creates `task_plan.json`
+3. **Implementer** (sub-agent) — writes code for one task using TDD
+4. **Tester** (sub-agent) — verifies the work (tests, deploy checks, logs)
+5. **Coder** reflects — assesses outcome, captures knowledge, commits, updates state
+6. Repeat 3-5 until all tasks done
+
+### 4. Continue working
 
 ```
 Use the coder agent to make progress
 ```
 
-If `task_plan.json` has pending tasks, the coder enters **implementing mode**:
-1. **Orient** — read `state.json` (one file, instant context), check health
-2. **Choose** the next pending task
-3. **Implement** with TDD
-4. **Observe** — run the adapter's verify protocol after deploys
-5. **Reflect** — assess outcome, detect patterns, create guards, update knowledge
-6. **Commit** and update all state files
-7. **Repeat** until context limit or all tasks done
+If pending tasks exist, the coder skips the architect and goes straight to the implementer → tester → reflect loop.
 
 ### 5. Garden (periodically)
 
@@ -98,16 +93,26 @@ Use the learner agent to learn from recent feedback
 
 Analyzes what you corrected, reverted, or overrode in agent work. Extracts patterns and encodes them into `preferences.md`, `anti-patterns.md`, adapter updates, and decision records — so future sessions don't repeat the same mistakes.
 
-## Agents
+## Agent Team
+
+### Primary Agents (user-invoked)
 
 | Agent | Responsibility | When |
 |---|---|---|
 | **initializer** | Scans project → generates adapter, state, init.sh | Once per project (team setup) |
-| **coder** | Plans features → implements tasks → reflects → commits | Every session (the work) |
+| **coder** | Coordinates the team — orients, dispatches, reflects, commits | Every session (the conductor) |
 | **gardener** | Detects entropy → cleans docs → fixes drift | Every 10+ sessions (maintenance) |
 | **learner** | Analyzes human corrections → updates long-term memory | After human reviews, or every 5-10 sessions |
 
-The **initializer** sets up the team. The **coder** does the work. The **gardener** keeps quality from degrading. The **learner** turns human feedback into knowledge that compounds.
+### Sub-Agents (dispatched by coder)
+
+| Sub-agent | Role | Dispatched When |
+|---|---|---|
+| **architect** | Brainstorm, design, create task_plan.json | No plan exists or all tasks done |
+| **implementer** | Write code, TDD, one task at a time | Pending tasks exist |
+| **tester** | Verify: tests, deploy checks, log verification | After implementation |
+
+The **coder** is a lightweight coordinator — it reads state, decides what to do, and dispatches to the right sub-agent. It does NOT write code or run tests itself. The **architect** plans, the **implementer** codes, the **tester** verifies.
 
 ## Lifecycle
 
@@ -115,35 +120,41 @@ The **initializer** sets up the team. The **coder** does the work. The **gardene
 INITIALIZER (once per project)
   └─ Scan project → adapter.md, state.json, init.sh → commit
 
-CODER — Planning Mode (when no tasks exist)
-  ├─ Read adapter.md + codebase
-  ├─ Brainstorm approaches → get user approval
-  ├─ Create task_plan.json → commit
-  └─ Transition to Implementing Mode
-
-CODER — Implementing Mode (when pending tasks exist)
-  ├─ ORIENT
-  │   ├─ Read state.json (instant context)
-  │   ├─ Read task_plan.json + notes.md + git log
-  │   ├─ Read domain/adapter.md
+CODER (every session) — the coordinator
+  │
+  ├─ ORIENT (coder does this)
+  │   ├─ Read state.json, task_plan.json, notes.md, git log
+  │   ├─ Read domain/adapter.md, preferences.md, anti-patterns.md
   │   ├─ Run init.sh + smoke test
-  │   │   └─ If broken → FIX FIRST
-  │   └─ Choose next pending task
+  │   └─ Decide: need plan? or need implementation?
   │
-  ├─ IMPLEMENT (one task)
-  │   └─ TDD: test → implement → verify → commit
+  ├─ DISPATCH
+  │   │
+  │   ├─ No plan? → ARCHITECT
+  │   │   ├─ Explore codebase + adapter
+  │   │   ├─ Propose 2-3 approaches → get approval
+  │   │   └─ Create task_plan.json → commit
+  │   │
+  │   └─ Pending tasks? → for each task:
+  │       │
+  │       ├─ IMPLEMENTER
+  │       │   ├─ Write failing test (TDD)
+  │       │   ├─ Write code → green
+  │       │   └─ Report: status, files, test results
+  │       │
+  │       └─ TESTER
+  │           ├─ Run full test suite
+  │           ├─ Deploy verification (if applicable)
+  │           ├─ Log checks, performance baseline
+  │           └─ Report: pass/fail with evidence
   │
-  ├─ OBSERVE (if deployed)
-  │   ├─ Run adapter's verify methods
-  │   └─ If fails → FIX, don't proceed
-  │
-  ├─ REFLECT
-  │   ├─ Assess outcome (success/fail/partial)
+  ├─ REFLECT (coder does this)
+  │   ├─ Assess outcome
   │   ├─ Pattern recognition → create guard if recurring
-  │   ├─ Update domain knowledge if new learning
+  │   ├─ Capture knowledge
   │   └─ Adjust plan if needed
   │
-  ├─ UPDATE STATE
+  ├─ COMMIT + UPDATE STATE (coder does this)
   │   ├─ state.json ← session summary
   │   ├─ task_plan.json ← task status
   │   └─ notes.md ← timestamped log
@@ -151,34 +162,27 @@ CODER — Implementing Mode (when pending tasks exist)
   └─ REPEAT or STOP (clean state)
 
 GARDENER (every 10+ sessions)
-  └─ Detect drift → clean docs → fix state → update quality score
+  └─ Detect drift → clean docs → fix state → quality score
 
-LEARNER (after human corrections, or every 5-10 sessions)
-  ├─ ANALYZE
-  │   ├─ Git history: reverts, fix-ups, manual overrides
-  │   ├─ PR comments: recurring review feedback
-  │   ├─ notes.md: mid-session corrections, "do it this way"
-  │   └─ task_plan.json history: rejected plans
-  │
-  ├─ CLASSIFY each correction
-  │   ├─ Style preference → preferences.md
-  │   ├─ Domain rule → adapter.md gotchas
-  │   ├─ Architecture decision → docs/decisions/ ADR
-  │   ├─ Wrong approach → anti-patterns.md
-  │   └─ Process gap → harness protocol update
-  │
-  └─ COMMIT learned knowledge
+LEARNER (after human corrections)
+  ├─ Analyze: git diffs, PR comments, notes.md, rejected plans
+  ├─ Classify: preference, anti-pattern, gotcha, ADR, process gap
+  └─ Encode into: preferences.md, anti-patterns.md, adapter.md, docs/decisions/
 ```
 
 ## File Structure
 
 ```
 .claude/
-├── CLAUDE.md                     # ~60 lines: mission, rules, file map
+├── CLAUDE.md                     # ~70 lines: mission, rules, file map
 ├── agents/
 │   ├── initializer.md            # Auto-scan → generate scaffold
-│   ├── coder.md                  # Orient → implement → observe → reflect
-│   └── gardener.md               # Periodic quality maintenance
+│   ├── coder.md                  # ★ Coordinator: orient → dispatch → reflect → commit
+│   ├── architect.md              # Sub-agent: brainstorm → design → task_plan.json
+│   ├── implementer.md            # Sub-agent: TDD → code → build check
+│   ├── tester.md                 # Sub-agent: tests → deploy verify → logs
+│   ├── gardener.md               # Periodic quality maintenance
+│   └── learner.md                # Human feedback → long-term memory
 ├── harness/
 │   ├── session-start.md          # 6-step startup protocol
 │   ├── session-reflect.md        # 6-step post-task reflection
@@ -245,6 +249,8 @@ These come directly from the two papers:
 | Encode taste into tools | OpenAI | Reflection loop creates guards from recurring patterns |
 | Garbage collection | OpenAI | Gardener agent detects and fixes entropy |
 | Make the app readable | OpenAI | Observe protocol wires verify/logs into the lifecycle |
+| Specialized agents | Both | Architect, implementer, tester — each with narrow focus |
+| Human taste compounds | OpenAI | Learner agent encodes corrections into long-term memory |
 
 ## License
 
