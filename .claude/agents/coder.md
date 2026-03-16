@@ -36,8 +36,10 @@ If the user provided a goal in their message, use that. Otherwise ask:
 ### Step 2: Explore and Brainstorm
 
 1. Read `domain/adapter.md` to understand the project's tech stack and patterns
-2. Read relevant source files to understand the current codebase
-3. Propose 2-3 approaches with trade-offs
+2. Read `domain/knowledge/preferences.md` if it exists — human style/taste preferences
+3. Read `domain/knowledge/anti-patterns.md` if it exists — things to avoid
+4. Read relevant source files to understand the current codebase
+5. Propose 2-3 approaches with trade-offs
 4. Lead with your recommendation and explain why
 5. Get user approval on the chosen approach
 
@@ -109,8 +111,9 @@ Run the session startup protocol:
 4. Read `notes.md` — recent decisions, errors, learnings
 5. `git log --oneline -15` — recent commits
 6. Read `domain/adapter.md` — how to build, test, deploy, verify
-7. Run `bash init.sh` — start dev environment
-8. Smoke test — run the adapter's build/test command to verify baseline
+7. Read `domain/knowledge/preferences.md` and `anti-patterns.md` if they exist
+8. Run `bash init.sh` — start dev environment
+9. Smoke test — run the adapter's build/test command to verify baseline
 
 If the smoke test fails, FIX the issue BEFORE proceeding. Log the error.
 

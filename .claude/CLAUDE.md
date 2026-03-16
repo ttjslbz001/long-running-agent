@@ -9,13 +9,15 @@ A portable, project-agnostic harness for multi-session AI coding agents.
 | **initializer** | ONCE per project — scans codebase, generates adapter + state | `Use the initializer agent to set up this project` |
 | **coder** | Every session — plans features OR implements tasks | `Use the coder agent to [your goal]` |
 | **gardener** | Periodically — cleans drift, updates quality score | `Use the gardener agent to clean up` |
+| **learner** | After human corrections — extracts patterns, updates long-term memory | `Use the learner agent to learn from recent feedback` |
 
 ## Lifecycle
 
 ```
-init (once)   →  scans project → generates adapter.md, state.json, init.sh
-coder (plan)  →  user gives goal → brainstorm → approve → task_plan.json
-coder (build) →  orient → implement → observe → reflect → commit → repeat
+init (once)    →  scans project → generates adapter.md, state.json, init.sh
+coder (plan)   →  user gives goal → brainstorm → approve → task_plan.json
+coder (build)  →  orient → implement → observe → reflect → commit → repeat
+learner (loop) →  analyzes human corrections → updates preferences, anti-patterns, adapter
 ```
 
 ## Key Files
@@ -28,6 +30,8 @@ coder (build) →  orient → implement → observe → reflect → commit → r
 | `init.sh` | Shell | Idempotent dev environment setup |
 | `domain/adapter.md` | Markdown | Project-specific build/test/deploy/verify recipes |
 | `domain/knowledge/` | Markdown | Domain docs discovered or created during work |
+| `domain/knowledge/preferences.md` | Markdown | Human style/taste preferences (learner agent) |
+| `domain/knowledge/anti-patterns.md` | Markdown | Things agents must avoid (learner agent) |
 
 ## Rules
 
@@ -48,7 +52,8 @@ coder (build) →  orient → implement → observe → reflect → commit → r
 ├── agents/
 │   ├── initializer.md         scan project → generate scaffold
 │   ├── coder.md               orient → implement → observe → reflect → commit
-│   └── gardener.md            periodic quality maintenance
+│   ├── gardener.md            periodic quality maintenance
+│   └── learner.md             human feedback → long-term memory
 ├── harness/
 │   ├── session-start.md       generic startup protocol
 │   ├── session-reflect.md     post-task reflection protocol

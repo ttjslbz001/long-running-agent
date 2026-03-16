@@ -90,6 +90,14 @@ Use the gardener agent to clean up
 
 Detects stale docs, pattern drift, flaky tests, and state file inconsistencies. Opens cleanup commits.
 
+### 6. Learn from your corrections
+
+```
+Use the learner agent to learn from recent feedback
+```
+
+Analyzes what you corrected, reverted, or overrode in agent work. Extracts patterns and encodes them into `preferences.md`, `anti-patterns.md`, adapter updates, and decision records — so future sessions don't repeat the same mistakes.
+
 ## Agents
 
 | Agent | Responsibility | When |
@@ -97,8 +105,9 @@ Detects stale docs, pattern drift, flaky tests, and state file inconsistencies. 
 | **initializer** | Scans project → generates adapter, state, init.sh | Once per project (team setup) |
 | **coder** | Plans features → implements tasks → reflects → commits | Every session (the work) |
 | **gardener** | Detects entropy → cleans docs → fixes drift | Every 10+ sessions (maintenance) |
+| **learner** | Analyzes human corrections → updates long-term memory | After human reviews, or every 5-10 sessions |
 
-The **initializer** sets up the team. The **coder** does the work (both planning and building). The **gardener** keeps quality from degrading.
+The **initializer** sets up the team. The **coder** does the work. The **gardener** keeps quality from degrading. The **learner** turns human feedback into knowledge that compounds.
 
 ## Lifecycle
 
@@ -143,6 +152,22 @@ CODER — Implementing Mode (when pending tasks exist)
 
 GARDENER (every 10+ sessions)
   └─ Detect drift → clean docs → fix state → update quality score
+
+LEARNER (after human corrections, or every 5-10 sessions)
+  ├─ ANALYZE
+  │   ├─ Git history: reverts, fix-ups, manual overrides
+  │   ├─ PR comments: recurring review feedback
+  │   ├─ notes.md: mid-session corrections, "do it this way"
+  │   └─ task_plan.json history: rejected plans
+  │
+  ├─ CLASSIFY each correction
+  │   ├─ Style preference → preferences.md
+  │   ├─ Domain rule → adapter.md gotchas
+  │   ├─ Architecture decision → docs/decisions/ ADR
+  │   ├─ Wrong approach → anti-patterns.md
+  │   └─ Process gap → harness protocol update
+  │
+  └─ COMMIT learned knowledge
 ```
 
 ## File Structure
